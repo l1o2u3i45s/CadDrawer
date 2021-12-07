@@ -1,0 +1,77 @@
+﻿<Window x:Class="CadDrawer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CadDrawer"
+        xmlns:customControl="clr-namespace:CadDrawer.CustomControl"
+        mc:Ignorable="d"
+        DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
+        Title="MainWindow" Height="800" Width="1000">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="200"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <Grid>
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="5">
+                    <TextBlock Text="ImageWidth" VerticalAlignment="Center" FontSize="20"/>
+                    <TextBox Text="{Binding ImageWidth}" Width="100"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="5">
+                    <TextBlock Text="ImageHeight" FontSize="20"/>
+                    <TextBox Text="{Binding ImageHeight}" Width="100"/>
+                </StackPanel>
+
+
+                <GroupBox Header="Cad"> 
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <TextBlock Text="Row" VerticalAlignment="Center" FontSize="20"/>
+                            <TextBox Text="{Binding CadRowCount}" Width="100"/>
+                            <TextBlock Margin="5,0,0,0" Text="Column" FontSize="20"/>
+                            <TextBox Text="{Binding CadColumnCount}" Width="100"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                          
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+                <StackPanel Orientation="Horizontal" Margin="5">
+                    <Button Content="Cretae" Command="{Binding CreateAndDrawImageCommand}"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition  />
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="New BitMap Time(ms)"/>
+                <TextBlock Text="{Binding NewImageTimeMs}"/>
+
+                <TextBlock Text="Draw Cad Time(ms)" Margin="50,0,0,0"/>
+                <TextBlock Text="{Binding DrawTimeMs}"/>
+
+                <TextBlock Text="UI Render Time(ms)"  Margin="50,0,0,0"/>
+                <TextBlock Text="{Binding UiRenderTimeMs}"/>
+            </StackPanel>
+            <Viewbox ClipToBounds="True"  Grid.Row="1">
+                <customControl:LiveImage Margin="5" 
+                                         Width="{Binding ImageWidth}"
+                                         Height="{Binding ImageHeight}"
+                                         CurrentMousePoint="{Binding LiveMousePoint , Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"  
+                                         LiveSource="{Binding ImageBitmap,UpdateSourceTrigger=PropertyChanged}"></customControl:LiveImage>
+
+            </Viewbox>
+           
+        </Grid>
+    </Grid>
+</Window>

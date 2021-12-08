@@ -58,6 +58,7 @@ namespace CadDrawer.Class
         public bool IsMousePress { get; set; }
         public Rect SelectionRectangle { get; set; }
 
-
+        public Point RealImageStartPoint { get; set; }
+        public Point RealImageEndPoint { get; set; }
     }
 }

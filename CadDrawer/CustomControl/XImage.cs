@@ -227,23 +227,7 @@ namespace CadDrawer.CustomControl
         {
             var x = (int)((p.X - FovImagePositionX) / Scale);
             var y = (int)((p.Y - FovImagePositionY) / Scale);
-
-            if (grayImageData.Source == null) return;
-
-            unsafe
-            {
-
-                var bitBuffer = (byte*)((WriteableBitmap)grayImageData.Source).BackBuffer;
-
-                var width = (int)((WriteableBitmap)grayImageData.Source).PixelWidth;
-                var height = (int)((WriteableBitmap)grayImageData.Source).PixelHeight;
-
-                var grayScale = *(bitBuffer + (width * y) + x);
-                SetValue(CurrentGrayScaleProperty, Convert.ToInt32(grayScale));
-
-            }
-
-
+            
             SetValue(CurrentMousePointProperty, new Point(x, y));
         }
 

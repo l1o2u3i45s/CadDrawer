@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -17,11 +18,13 @@ namespace CadDrawer.ViewModel
 { 
     public class MainViewModel : ViewModelBase
     {
+        private int[] selectedRect;
+
         private Stopwatch watch = new Stopwatch();
 
         private LiveImage uiliveImage;
 
-        private int imageWidth = 200;
+        private int imageWidth = 8000;
 
         public int ImageWidth
         {
@@ -29,7 +32,7 @@ namespace CadDrawer.ViewModel
             set { Set(() => ImageWidth, ref imageWidth, value); }
         }
 
-        private int imageHeight = 200;
+        private int imageHeight = 8000;
 
         public int ImageHeight
         {
@@ -37,33 +40,33 @@ namespace CadDrawer.ViewModel
             set { Set(() => ImageHeight, ref imageHeight, value); }
         }
 
-        private int cadRowCount = 20;
+        private int cadRowCount = 3999;
         public int CadRowCount
         {
             get => cadRowCount;
             set { Set(() => CadRowCount, ref cadRowCount, value); }
         }
 
-        private int cadColumnCount = 1;
+        private int cadColumnCount = 3999;
         public int CadColumnCount
         {
             get => cadColumnCount;
             set { Set(() => CadColumnCount, ref cadColumnCount, value); }
         }
 
-        //private int cadWidth = 20;
-        //public int CadWidth
-        //{
-        //    get => cadWidth;
-        //    set { Set(() => CadWidth, ref cadWidth, value); }
-        //}
+        private int cadWidth;
+        public int CadWidth
+        {
+            get => cadWidth;
+            set { Set(() => CadWidth, ref cadWidth, value); }
+        }
 
-        //private int cadHeight = 20;
-        //public int CadHeight
-        //{
-        //    get => cadHeight;
-        //    set { Set(() => CadHeight, ref cadHeight, value); }
-        //}
+        private int cadHeight;
+        public int CadHeight
+        {
+            get => cadHeight;
+            set { Set(() => CadHeight, ref cadHeight, value); }
+        }
 
         private int newImageTimeMs = 0;
         public int NewImageTimeMs
@@ -84,6 +87,13 @@ namespace CadDrawer.ViewModel
         {
             get => uiRenderTimeMs;
             set { Set(() => UiRenderTimeMs, ref uiRenderTimeMs, value); }
+        }
+
+        private int selectRectTimeMs = 0;
+        public int SelectRectTimeMs
+        {
+            get => selectRectTimeMs;
+            set { Set(() => SelectRectTimeMs, ref selectRectTimeMs, value); }
         }
 
         private WriteableBitmap imageBitmap;
@@ -129,7 +139,40 @@ namespace CadDrawer.ViewModel
         private void MouseRightButtonUpAction()
         { 
             RectSelector.IsMousePress = false;
-            RectSelector.IsRectVisible = Visibility.Collapsed; 
+            RectSelector.IsRectVisible = Visibility.Collapsed;
+            watch.Restart();
+            
+            double maxX = RectSelector.RealImageStartPoint.X > RectSelector.RealImageEndPoint.X
+                ? RectSelector.RealImageStartPoint.X : RectSelector.RealImageEndPoint.X;
+
+            double minX = RectSelector.RealImageStartPoint.X < RectSelector.RealImageEndPoint.X
+                ? RectSelector.RealImageStartPoint.X : RectSelector.RealImageEndPoint.X;
+
+            double maxY = RectSelector.RealImageStartPoint.Y > RectSelector.RealImageEndPoint.Y
+                ? RectSelector.RealImageStartPoint.Y : RectSelector.RealImageEndPoint.Y;
+
+            double minY = RectSelector.RealImageStartPoint.Y < RectSelector.RealImageEndPoint.Y
+                ? RectSelector.RealImageStartPoint.Y : RectSelector.RealImageEndPoint.Y;
+
+
+
+            for (int i = 0; i < selectedRect.Length; i += 2)
+            {
+                if (selectedRect[i] >= minX && selectedRect[i] <= maxX &&
+                    selectedRect[i + 1] >= minY && selectedRect[i + 1] <= maxY)
+                {
+                    unsafe
+                    {
+                        var imageBuffer = (byte*)ImageBitmap.BackBuffer.ToPointer();
+                        DrawSingCad(imageBuffer + (selectedRect[i + 1] * imageHeight + selectedRect[i]), imageWidth, imageHeight, cadWidth, cadHeight, 10);
+                    }
+                }
+            }
+
+            ImageBitmap.Lock();
+            ImageBitmap.AddDirtyRect(new Int32Rect(0, 0, imageWidth, ImageHeight));
+            ImageBitmap.Unlock();
+            SelectRectTimeMs = (int)watch.ElapsedMilliseconds;
         }
 
         private void MouseMoveAction()
@@ -138,8 +181,8 @@ namespace CadDrawer.ViewModel
             if ( RectSelector.IsMousePress == false)
                 return;
 
-            RectSelector.EndPoint = Mouse.GetPosition(uiliveImage); ;
-
+            RectSelector.EndPoint = Mouse.GetPosition(uiliveImage);
+            RectSelector.RealImageEndPoint = liveMousePoint;  
             RectSelector.SelectionRectangle = new Rect(Math.Min(RectSelector.EndPoint.X, RectSelector.StartPoint.X),
                 Math.Min(RectSelector.EndPoint.Y, RectSelector.StartPoint.Y),
                 Math.Abs(RectSelector.EndPoint.X - RectSelector.StartPoint.X),
@@ -154,12 +197,43 @@ namespace CadDrawer.ViewModel
 
         private void MouseRightButtonDownAction(LiveImage liveImage)
         {
+            double maxX = RectSelector.RealImageStartPoint.X > RectSelector.RealImageEndPoint.X
+                ? RectSelector.RealImageStartPoint.X : RectSelector.RealImageEndPoint.X;
+
+            double minX = RectSelector.RealImageStartPoint.X < RectSelector.RealImageEndPoint.X
+                ? RectSelector.RealImageStartPoint.X : RectSelector.RealImageEndPoint.X;
+
+            double maxY = RectSelector.RealImageStartPoint.Y > RectSelector.RealImageEndPoint.Y
+                ? RectSelector.RealImageStartPoint.Y : RectSelector.RealImageEndPoint.Y;
+
+            double minY = RectSelector.RealImageStartPoint.Y < RectSelector.RealImageEndPoint.Y
+                ? RectSelector.RealImageStartPoint.Y : RectSelector.RealImageEndPoint.Y;
+
+            for (int i = 0; i < selectedRect.Length; i += 2)
+            {
+                if (selectedRect[i] >= minX && selectedRect[i] <= maxX &&
+                    selectedRect[i + 1] >= minY && selectedRect[i + 1] <= maxY)
+                {
+                    unsafe
+                    {
+                        var imageBuffer = (byte*)ImageBitmap.BackBuffer.ToPointer();
+                        DrawSingCad(imageBuffer + (selectedRect[i + 1] * imageHeight + selectedRect[i]), imageWidth, imageHeight, cadWidth, cadHeight, 255);
+                    }
+                }
+            }
+
+            ImageBitmap.Lock();
+            ImageBitmap.AddDirtyRect(new Int32Rect(0, 0, imageWidth, ImageHeight));
+            ImageBitmap.Unlock();
+
             uiliveImage = liveImage;
-            
-             
+
+
             RectSelector.StartPoint = Mouse.GetPosition(uiliveImage);
-            RectSelector.EndPoint = Mouse.GetPosition(uiliveImage);
-            RectSelector.IsMousePress = true; 
+            RectSelector.RealImageStartPoint = liveMousePoint;  
+            RectSelector.IsMousePress = true;
+
+           
         }
 
         private void CreateAndDrawImageAction()
@@ -167,8 +241,9 @@ namespace CadDrawer.ViewModel
             watch.Restart();
             ImageBitmap = new WriteableBitmap(imageWidth, imageHeight, 96,96, PixelFormats.Gray8,null);
             NewImageTimeMs = (int)watch.ElapsedMilliseconds;
+            selectedRect = new int[cadRowCount * cadColumnCount * 2];
 
-           
+
             watch.Restart();
             unsafe
             {
@@ -188,24 +263,24 @@ namespace CadDrawer.ViewModel
         }
 
         private unsafe void DrawCad(byte* image,int width,int height,int cadRowCount,int cadColumnCount)
-        {
-           int cadWidth = imageWidth / (cadColumnCount * 2 + 1);
-           int cadHeight = imageHeight / (cadRowCount * 2 + 1);
-              
+        { 
+            cadWidth = imageWidth / (cadColumnCount * 2 + 1);
+            cadHeight = imageHeight / (cadRowCount * 2 + 1);
 
+           int idx = 0;
             for (int i = 0; i < cadRowCount; i++)
             {
                 for (int j = 0; j < cadColumnCount; j++)
                 {
-                    DrawSingCad(image + (2*i+1)*cadHeight*imageWidth + (2*j + 1)*cadWidth ,width,height ,cadWidth, cadHeight);
-                   
-                     
+                    DrawSingCad(image + (2*i+1)*cadHeight*imageWidth + (2*j + 1)*cadWidth ,width,height ,cadWidth, cadHeight,255);
+                    selectedRect[idx++] = (2 * j + 1) * cadWidth;
+                    selectedRect[idx++] = (2 * i + 1) * cadHeight; 
                 } 
               
             }
         }
 
-        private unsafe void DrawSingCad(byte* image,int imageWidth,int imageHeight,int cadWidth,int cadHeight)
+        private unsafe void DrawSingCad(byte* image,int imageWidth,int imageHeight,int cadWidth,int cadHeight,byte grayValue)
         {
 
             byte* pTempImage = image;
@@ -213,7 +288,7 @@ namespace CadDrawer.ViewModel
             {
                 for (int j = 0; j < cadWidth; j++)
                 {
-                    *(pTempImage + i * imageWidth +  j) = 255;
+                    *(pTempImage + i * imageWidth +  j) = grayValue;
                 }
                  
                 

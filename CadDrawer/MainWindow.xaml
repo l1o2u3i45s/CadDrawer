@@ -52,6 +52,7 @@
         </Grid>
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
+                <RowDefinition Height="50"/> 
                 <RowDefinition Height="50"/>
                 <RowDefinition  />
             </Grid.RowDefinitions>
@@ -64,8 +65,15 @@
 
                 <TextBlock Text="UI Render Time(ms)"  Margin="50,0,0,0"/>
                 <TextBlock Text="{Binding UiRenderTimeMs}"/>
+
             </StackPanel>
-            <Viewbox ClipToBounds="True"  Grid.Row="1" > 
+            <StackPanel Grid.Row="1" Orientation="Horizontal">
+
+                <TextBlock Text="SelectRectTimeMs Time(ms)" />
+                <TextBlock Text="{Binding SelectRectTimeMs}"/>
+
+            </StackPanel>
+            <Viewbox ClipToBounds="True"  Grid.Row="2" > 
                 <Grid>
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="MouseRightButtonDown">

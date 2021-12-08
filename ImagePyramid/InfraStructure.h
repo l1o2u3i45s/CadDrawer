@@ -11,7 +11,9 @@ class __declspec(dllexport) CImageInfo {
 public:
 	CImageInfo(int* position,unsigned char* imageBuffer);
 	
+	int* GetImageInfo();
 
+	unsigned char* GetImageBuffer();
 private:
 	int* m_ImagePosition; //定義此圖的位置 Left,TOp,Width,Height
 

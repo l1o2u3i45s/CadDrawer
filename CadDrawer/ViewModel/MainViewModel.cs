@@ -3,26 +3,17 @@ using System.Diagnostics;
 using System.Dynamic;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using CadDrawer.Class;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight.Messaging;
 
 namespace CadDrawer.ViewModel
-{
-    /// <summary>
-    /// This class contains properties that the main View can data bind to.
-    /// <para>
-    /// Use the <strong>mvvminpc</strong> snippet to add bindable properties to this ViewModel.
-    /// </para>
-    /// <para>
-    /// You can also use Blend to data bind with the tool's support.
-    /// </para>
-    /// <para>
-    /// See http://www.galasoft.ch/mvvm
-    /// </para>
-    /// </summary>
+{ 
     public class MainViewModel : ViewModelBase
     {
         private Stopwatch watch = new Stopwatch();
@@ -112,10 +103,64 @@ namespace CadDrawer.ViewModel
             }
         }
 
+        private RectSelector rectSelector = null;
+
+        public RectSelector RectSelector
+        {
+            get { return rectSelector; }
+            set { Set(() => RectSelector, ref rectSelector, value); }
+        }
+
         public RelayCommand CreateAndDrawImageCommand { get; set; }
+        public RelayCommand MouseRightButtonDownCommand { get; set; }
+        public RelayCommand MouseMoveCommand { get; set; }
+        public RelayCommand MouseRightButtonUpCommand { get; set; }
+
         public MainViewModel()
         {
             CreateAndDrawImageCommand = new RelayCommand(CreateAndDrawImageAction);
+            MouseRightButtonDownCommand = new RelayCommand(MouseRightButtonDownAction);
+            MouseMoveCommand = new RelayCommand(MouseMoveAction);
+            MouseRightButtonUpCommand = new RelayCommand(MouseRightButtonUpAction);
+        }
+
+        private void MouseRightButtonUpAction()
+        { 
+            RectSelector.IsMousePress = false;
+            RectSelector.IsRectVisible = Visibility.Collapsed; 
+            RectSelector = null;  
+        }
+
+        private void MouseMoveAction()
+        {
+
+            if (RectSelector == null || RectSelector.IsMousePress == false)
+                return;
+
+            RectSelector.EndPoint = liveMousePoint;
+
+            RectSelector.SelectionRectangle = new Rect(Math.Min(RectSelector.EndPoint.X, RectSelector.StartPoint.X),
+                Math.Min(RectSelector.EndPoint.Y, RectSelector.StartPoint.Y),
+                Math.Abs(RectSelector.EndPoint.X - RectSelector.StartPoint.X),
+                Math.Abs(RectSelector.EndPoint.Y - RectSelector.StartPoint.Y));
+
+            RectSelector.RectWidth = RectSelector.SelectionRectangle.Width;
+            RectSelector.RectHeight = RectSelector.SelectionRectangle.Height;
+            RectSelector.RectCanvasLeft = RectSelector.SelectionRectangle.Left;
+            RectSelector.RectCanvasTop = RectSelector.SelectionRectangle.Top;
+            RectSelector.IsRectVisible = Visibility.Visible;
+        }
+
+        private void MouseRightButtonDownAction()
+        { 
+            if (RectSelector == null)
+            {
+                RectSelector = new RectSelector();
+            }
+             
+            RectSelector.StartPoint = LiveMousePoint;
+            RectSelector.EndPoint = LiveMousePoint;
+            RectSelector.IsMousePress = true; 
         }
 
         private void CreateAndDrawImageAction()

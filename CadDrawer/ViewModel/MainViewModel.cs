@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using CadDrawer.Class;
+using CadDrawer.CustomControl;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
@@ -18,6 +19,7 @@ namespace CadDrawer.ViewModel
     {
         private Stopwatch watch = new Stopwatch();
 
+        private LiveImage uiliveImage;
 
         private int imageWidth = 200;
 
@@ -103,7 +105,7 @@ namespace CadDrawer.ViewModel
             }
         }
 
-        private RectSelector rectSelector = null;
+        private RectSelector rectSelector =  new RectSelector();
 
         public RectSelector RectSelector
         {
@@ -112,14 +114,14 @@ namespace CadDrawer.ViewModel
         }
 
         public RelayCommand CreateAndDrawImageCommand { get; set; }
-        public RelayCommand MouseRightButtonDownCommand { get; set; }
+        public RelayCommand<LiveImage> MouseRightButtonDownCommand { get; set; }
         public RelayCommand MouseMoveCommand { get; set; }
         public RelayCommand MouseRightButtonUpCommand { get; set; }
 
         public MainViewModel()
         {
             CreateAndDrawImageCommand = new RelayCommand(CreateAndDrawImageAction);
-            MouseRightButtonDownCommand = new RelayCommand(MouseRightButtonDownAction);
+            MouseRightButtonDownCommand = new RelayCommand<LiveImage>(MouseRightButtonDownAction);
             MouseMoveCommand = new RelayCommand(MouseMoveAction);
             MouseRightButtonUpCommand = new RelayCommand(MouseRightButtonUpAction);
         }
@@ -128,16 +130,15 @@ namespace CadDrawer.ViewModel
         { 
             RectSelector.IsMousePress = false;
             RectSelector.IsRectVisible = Visibility.Collapsed; 
-            RectSelector = null;  
         }
 
         private void MouseMoveAction()
         {
 
-            if (RectSelector == null || RectSelector.IsMousePress == false)
+            if ( RectSelector.IsMousePress == false)
                 return;
 
-            RectSelector.EndPoint = liveMousePoint;
+            RectSelector.EndPoint = Mouse.GetPosition(uiliveImage); ;
 
             RectSelector.SelectionRectangle = new Rect(Math.Min(RectSelector.EndPoint.X, RectSelector.StartPoint.X),
                 Math.Min(RectSelector.EndPoint.Y, RectSelector.StartPoint.Y),
@@ -151,15 +152,13 @@ namespace CadDrawer.ViewModel
             RectSelector.IsRectVisible = Visibility.Visible;
         }
 
-        private void MouseRightButtonDownAction()
-        { 
-            if (RectSelector == null)
-            {
-                RectSelector = new RectSelector();
-            }
+        private void MouseRightButtonDownAction(LiveImage liveImage)
+        {
+            uiliveImage = liveImage;
+            
              
-            RectSelector.StartPoint = LiveMousePoint;
-            RectSelector.EndPoint = LiveMousePoint;
+            RectSelector.StartPoint = Mouse.GetPosition(uiliveImage);
+            RectSelector.EndPoint = Mouse.GetPosition(uiliveImage);
             RectSelector.IsMousePress = true; 
         }
 

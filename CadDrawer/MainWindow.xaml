@@ -70,7 +70,8 @@
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="MouseRightButtonDown">
                             <command:EventToCommand 
-                                Command="{Binding MouseRightButtonDownCommand}"/>
+                                Command="{Binding MouseRightButtonDownCommand}" 
+                                CommandParameter="{Binding ElementName=LiveImage}"/>
                         </i:EventTrigger>
                         <i:EventTrigger EventName="MouseMove">
                             <command:EventToCommand 
@@ -81,7 +82,7 @@
                                 Command="{Binding MouseRightButtonUpCommand}"/>
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
-                    <customControl:LiveImage Margin="5" 
+                    <customControl:LiveImage Margin="5" x:Name="LiveImage"
                                              Width="{Binding ImageWidth}"
                                              Height="{Binding ImageHeight}"
                                              CurrentMousePoint="{Binding LiveMousePoint , Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"  

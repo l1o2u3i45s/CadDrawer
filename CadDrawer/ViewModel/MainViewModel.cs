@@ -24,7 +24,7 @@ namespace CadDrawer.ViewModel
 
         private LiveImage uiliveImage;
 
-        private int imageWidth = 8000;
+        private int imageWidth = 20000;
 
         public int ImageWidth
         {
@@ -32,7 +32,7 @@ namespace CadDrawer.ViewModel
             set { Set(() => ImageWidth, ref imageWidth, value); }
         }
 
-        private int imageHeight = 8000;
+        private int imageHeight = 20000;
 
         public int ImageHeight
         {
@@ -40,14 +40,14 @@ namespace CadDrawer.ViewModel
             set { Set(() => ImageHeight, ref imageHeight, value); }
         }
 
-        private int cadRowCount = 3999;
+        private int cadRowCount = 9999;
         public int CadRowCount
         {
             get => cadRowCount;
             set { Set(() => CadRowCount, ref cadRowCount, value); }
         }
 
-        private int cadColumnCount = 3999;
+        private int cadColumnCount = 9999;
         public int CadColumnCount
         {
             get => cadColumnCount;
@@ -164,7 +164,7 @@ namespace CadDrawer.ViewModel
                     unsafe
                     {
                         var imageBuffer = (byte*)ImageBitmap.BackBuffer.ToPointer();
-                        DrawSingCad(imageBuffer + (selectedRect[i + 1] * imageHeight + selectedRect[i]), imageWidth, imageHeight, cadWidth, cadHeight, 10);
+                        DrawSingCad(imageBuffer + (selectedRect[i + 1] * imageHeight + selectedRect[i]), imageWidth, imageHeight, cadWidth, cadHeight, 127);
                     }
                 }
             }
